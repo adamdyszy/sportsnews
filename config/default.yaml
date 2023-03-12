@@ -7,6 +7,7 @@ db:
   timeout_seconds: 10
 poller:
   runOnceAtBoot: true
+  teamName: t94
   list:
     url: "https://www.wearehullcity.co.uk/api/incrowd/getnewlistinformation"
     count: 100 # cannot get more than 100 at once

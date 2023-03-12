@@ -14,14 +14,24 @@ import (
 )
 
 func main() {
-	configFile := "config/default.yaml"
 	// Create a new Viper configuration object.
 	v := viper.GetViper()
-	v.SetConfigFile(configFile)
+	v.SetConfigFile("config/default.yaml")
 	err := viper.ReadInConfig()
 	if err != nil {
 		fmt.Printf("Failed to read configuration file, error: %s\n", err)
 		os.Exit(1)
+	}
+
+	// Read the custom configuration values if the custom config file exists.
+	v.SetConfigFile("config/custom.yaml")
+	if err := viper.MergeInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			fmt.Printf("Custom config file not found")
+		} else {
+			fmt.Printf("Error reading custom config file: %s\n", err)
+			os.Exit(2)
+		}
 	}
 
 	// Create logger
@@ -31,7 +41,7 @@ func main() {
 	z, err := cfg.Build()
 	if err != nil {
 		fmt.Printf("Failed to build logger, error: %s\n", err)
-		os.Exit(2)
+		os.Exit(3)
 	}
 	defer func(logger *zap.Logger) {
 		err := logger.Sync()
@@ -47,7 +57,7 @@ func main() {
 	s, err := storageImpl.NewMongoStorage(v.Sub("db"), ctx)
 	if err != nil {
 		logger.Error(err, "Could not initialize storage.")
-		os.Exit(3)
+		os.Exit(4)
 	}
 	defer func() {
 		err := s.Disconnect()
@@ -58,11 +68,11 @@ func main() {
 	err = poller.StartPollerWithConfigFile(ctx, v.Sub("poller"), logger, s)
 	if err != nil {
 		logger.Error(err, "Could not start poller.")
-		os.Exit(4)
+		os.Exit(5)
 	}
 	err = api.ListenAndServe(v.Sub("api"), s)
 	if err != nil {
 		logger.Error(err, "Could not server api.")
-		os.Exit(5)
+		os.Exit(6)
 	}
 }

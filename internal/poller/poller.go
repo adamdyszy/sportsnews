@@ -14,6 +14,19 @@ import (
 	"strconv"
 )
 
+type ListConfig interface {
+	GetListURL() string
+	GetListCount() int
+	GetListSchedule() string
+	GetTeamId() string
+}
+
+type DetailsConfig interface {
+	GetDetailsURL() string
+	GetDetailsSchedule() string
+	GetTeamId() string
+}
+
 type Config struct {
 	TeamId        string `mapstructure:"teamId"`
 	RunOnceAtBoot bool   `mapstructure:"runOnceAtBoot"`
@@ -26,6 +39,30 @@ type Config struct {
 		URL      string `mapstructure:"url"`
 		Schedule string `mapstructure:"schedule"`
 	} `mapstructure:"details"`
+}
+
+func (c Config) GetListURL() string {
+	return c.List.URL
+}
+
+func (c Config) GetListCount() int {
+	return c.List.Count
+}
+
+func (c Config) GetListSchedule() string {
+	return c.List.Schedule
+}
+
+func (c Config) GetDetailsURL() string {
+	return c.Details.URL
+}
+
+func (c Config) GetDetailsSchedule() string {
+	return c.Details.Schedule
+}
+
+func (c Config) GetTeamId() string {
+	return c.TeamId
 }
 
 /*
@@ -48,13 +85,13 @@ func StartPollerWithConfigFile(
 	logger.Info("Starting poller with this config.", "config", pollerConfig)
 	c := cron.New()
 	err = c.AddFunc(pollerConfig.List.Schedule, func() {
-		PollNewsListIntoStorage(ctx, pollerConfig.List.URL, pollerConfig.List.Count, logger, s)
+		PollNewsListIntoStorage(ctx, pollerConfig, logger, s)
 	})
 	if err != nil {
 		return fmt.Errorf("error adding PollNewsListIntoStorage to cron: %w", err)
 	}
 	err = c.AddFunc(pollerConfig.Details.Schedule, func() {
-		PollNewsDetailsIntoStorage(ctx, pollerConfig.Details.URL, logger, s)
+		PollNewsDetailsIntoStorage(ctx, pollerConfig, logger, s)
 	})
 	if err != nil {
 		return fmt.Errorf("error adding PollNewsDetailsIntoStorage to cron: %w", err)
@@ -70,9 +107,9 @@ func StartPollerWithConfigFile(
 	return nil
 }
 
-func PollNewsDetailsIntoStorage(ctx context.Context, url string, logger logr.Logger, s storage.ArticleStorage) {
+func PollNewsDetailsIntoStorage(ctx context.Context, config DetailsConfig, logger logr.Logger, s storage.ArticleStorage) {
 	logger = logger.WithValues("workerJob", "DetailsPolling")
-	logger = logger.WithValues("url", url)
+	logger = logger.WithValues("url", config.GetDetailsURL())
 	logger.Info("Getting news IDs that don't have details filled in.")
 	ids, err := s.GetNewsWithoutDetailsIDs()
 	if err != nil {
@@ -84,7 +121,7 @@ func PollNewsDetailsIntoStorage(ctx context.Context, url string, logger logr.Log
 		return
 	}
 	for _, id := range ids {
-		err := PollNewsDetailsIntoStorageOfGivenID(ctx, url, logger, s, id)
+		err := PollNewsDetailsIntoStorageOfGivenID(ctx, config, logger, s, id)
 		if err != nil {
 			logger.Error(err, fmt.Sprintf("Fail when polling details of newsId %v", id))
 			return
@@ -93,10 +130,10 @@ func PollNewsDetailsIntoStorage(ctx context.Context, url string, logger logr.Log
 	logger.Info("Finished polling details of all newses.")
 }
 
-func PollNewsDetailsIntoStorageOfGivenID(ctx context.Context, url string, logger logr.Logger, s storage.ArticleStorage, newsId string) error {
+func PollNewsDetailsIntoStorageOfGivenID(ctx context.Context, config DetailsConfig, logger logr.Logger, s storage.ArticleStorage, newsId string) error {
 	logger = logger.WithValues("newsId", newsId)
 	logger.Info("Starting to poll detailed news.")
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", config.GetDetailsURL(), nil)
 	if err != nil {
 		logger.Error(err, "Failed to create new GET request.")
 		return nil
@@ -127,7 +164,7 @@ func PollNewsDetailsIntoStorageOfGivenID(ctx context.Context, url string, logger
 		logger.Error(err, "Could not decode response.")
 		return nil
 	}
-	article, err := GetArticleFromNewsElement(news.NewsArticle, "t94", true)
+	article, err := GetArticleFromNewsElement(news.NewsArticle, config.GetTeamId(), true)
 	if err != nil {
 		logger.Error(err, fmt.Sprintf("Could not parse article from news %v", news.NewsArticle))
 		return nil
@@ -144,18 +181,18 @@ func PollNewsDetailsIntoStorageOfGivenID(ctx context.Context, url string, logger
 	return nil
 }
 
-func PollNewsListIntoStorage(ctx context.Context, url string, count int, logger logr.Logger, s storage.ArticleStorage) {
+func PollNewsListIntoStorage(ctx context.Context, config ListConfig, logger logr.Logger, s storage.ArticleStorage) {
 	logger = logger.WithValues("workerJob", "ListPolling")
-	logger = logger.WithValues("pollerNewsListCount", count)
-	logger = logger.WithValues("url", url)
+	logger = logger.WithValues("pollerNewsListCount", config.GetListCount())
+	logger = logger.WithValues("url", config.GetListURL())
 	logger.Info("Starting to poll news.")
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", config.GetListURL(), nil)
 	if err != nil {
 		logger.Error(err, "Failed to create new GET request.")
 		return
 	}
 	q := req.URL.Query()
-	q.Add("Count", strconv.Itoa(count))
+	q.Add("Count", strconv.Itoa(config.GetListCount()))
 	req.URL.RawQuery = q.Encode()
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
