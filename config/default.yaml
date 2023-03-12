@@ -1,0 +1,18 @@
+db:
+  uri: "mongodb://localhost:27017"
+  name: "newsDB"
+  articles_coll: "articles"
+  user: "mongoadmin"
+  password: "secret"
+  timeout_seconds: 10
+poller:
+  runOnceAtBoot: true
+  list:
+    url: "https://www.wearehullcity.co.uk/api/incrowd/getnewlistinformation"
+    count: 100 # cannot get more than 100 at once
+    schedule: "@every 1h"
+  details:
+    url: "https://www.wearehullcity.co.uk/api/incrowd/getnewsarticleinformation"
+    schedule: "@every 1h"
+api:
+  address: ":8080"

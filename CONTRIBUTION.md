@@ -23,3 +23,12 @@ Use go mod vendor to force reproducibility. For future using proxy with replaces
 
 Use viper for configuration
 
+## Documentation
+
+Add comments above function, constants, packages to document it.
+To run docs locally install godoc and run it on localhost:8080 using:
+
+```bash
+go install golang.org/x/tools/cmd/godoc@latest
+godoc -http :8080
+```
