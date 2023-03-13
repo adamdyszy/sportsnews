@@ -76,6 +76,15 @@ db.articles.countDocuments({hasDetails: false}) // how many articles without det
 // db.articles.deleteMany({id: "a6a25a18-3bb2-5444-b2af-4c4ffa872110"}) // delete articles with given id
 ```
 
+- You can easily run example mongo database with docker using:
+
+```bash
+docker run -d -p 27017:27017 --name some-mongo \
+	-e MONGO_INITDB_ROOT_USERNAME=mongoadmin \
+	-e MONGO_INITDB_ROOT_PASSWORD=secret \
+	mongo
+```
+
 ## Run tests
 
 ```bash
