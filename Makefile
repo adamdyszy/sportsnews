@@ -2,7 +2,7 @@ IMG ?= adamdyszy/sportsnews
 $(eval GIT_COMMIT := $(shell git rev-parse --short HEAD))
 TAG ?= $(GIT_COMMIT)
 ifeq ($(strip $(TAG)),)
-    TAG := $(shell find . -path './vendor' -prune -o -type f -print0 | sort -z | xargs -0 cat | md5sum | cut -d ' ' -f1)
+    TAG ?= $(shell find . -path './vendor' -prune -o -path './config' -prune -o -type f -print0 | sort -z | xargs -0 cat | md5sum | cut -d ' ' -f1)
 endif
 
 .PHONY: all
