@@ -99,3 +99,10 @@ go test ./...
 - There is no sorting of articles list when returning it
 - There is no swagger json for the API
 - When article has no details it shows in field hasDetails, but not in response status code
+
+## TODO
+
+- Add more tests
+- Add more descriptions for godoc
+- Add swagger json
+- Add docker generation
