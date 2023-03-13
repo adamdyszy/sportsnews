@@ -18,6 +18,30 @@ and then exposing that information through API.
 - Application will continue to serve API and run cron jobs indefinitely even if database will fail at some point,
 but if it will start working again at some point then it should work again if same connection details.
 
+## Quickstart
+
+Example using docker and mongo
+
+- You can easily run example mongo database and news server using docker with:
+
+**Note:** It will override your config/custom.yaml
+
+```bash
+make quickstart
+```
+
+- Then you should be able to access the app withing a minute with curl or accessing the web:
+
+```bash
+curl localhost:8080/articles
+```
+
+- To kill and delete these containers run:
+
+```bash
+make quickstart-kill
+```
+
 ## How to run
 
 - Build the binary using cached dependencies:
@@ -29,10 +53,20 @@ go build -o=bin/sportsnews -mod=vendor cmd/sportsnews/main.go
 - Create [config/custom.yaml](config/custom.yaml) file.
 - Add settings based on [config/default.yaml](config/default.yaml) where all fields are described.
 - Options at config/custom.yaml will override everything in config/default.yaml
-- Run using:
+- Run with config checks using:
 
 ```bash
 if test -r config/default.yaml && test -r config/custom.yaml;then ./bin/sportsnews;fi
+```
+
+- You can also build and run the docker image for the server, but before
+that make sure you have your config ready in config/custom.yaml:
+
+```bash
+make docker-build
+make docker-run
+# or
+make docker-run-background
 ```
 
 ## MongoDB configuration
@@ -76,28 +110,17 @@ db.articles.countDocuments({hasDetails: false}) // how many articles without det
 // db.articles.deleteMany({id: "a6a25a18-3bb2-5444-b2af-4c4ffa872110"}) // delete articles with given id
 ```
 
-- You can easily run example mongo database with docker using:
-
-```bash
-docker run -d -p 27017:27017 --name some-mongo \
-	-e MONGO_INITDB_ROOT_USERNAME=mongoadmin \
-	-e MONGO_INITDB_ROOT_PASSWORD=secret \
-	mongo
-```
-
 ## Run tests
 
 ```bash
-go test ./...
+make test
 ```
 
 ## What does not work
 
-- If hash of 2 different news is the same the poller will be confused and will treat them as same articles
 - There is no pruning data built into the system
 - Getting more than 100 latest news form hullcity was not possible
 - There is no sorting of articles list when returning it
-- There is no swagger json for the API
 - When article has no details it shows in field hasDetails, but not in response status code
 
 ## TODO
@@ -105,4 +128,4 @@ go test ./...
 - Add more tests
 - Add more descriptions for godoc
 - Add swagger json
-- Add docker generation
+- Add travis for CI/CD
