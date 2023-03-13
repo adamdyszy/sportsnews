@@ -1,6 +1,9 @@
 IMG ?= adamdyszy/sportsnews
 $(eval GIT_COMMIT := $(shell git rev-parse --short HEAD))
 TAG ?= $(GIT_COMMIT)
+ifeq ($(strip $(TAG)),)
+    TAG := $(shell find . -path './vendor' -prune -o -type f -print0 | sort -z | xargs -0 cat | md5sum | cut -d ' ' -f1)
+endif
 
 .PHONY: all
 all: test build docker-build
@@ -19,11 +22,11 @@ docker-build: test
 
 .PHONY: docker-run
 docker-run: docker-build
-	docker run -it --rm -v ${PWD}/config:/config -p 8080:8080 ${IMG}:${TAG}
+	docker run -it --rm -v "${PWD}/config:/config" -p 8080:8080 "${IMG}:${TAG}"
 
 .PHONY: docker-run-background
 docker-run-background: docker-build
-	docker run -d --rm -v ${PWD}/config:/config -p 8080:8080 ${IMG}:${TAG}
+	docker run -d --rm -v "${PWD}/config:/config" -p 8080:8080 "${IMG}:${TAG}"
 
 .PHONY: quickstart quickstart-mongo
 quickstart quickstart-mongo: docker-build quickstart-config-mongo
@@ -31,9 +34,9 @@ quickstart quickstart-mongo: docker-build quickstart-config-mongo
     	-e MONGO_INITDB_ROOT_USERNAME=mongoadmin \
     	-e MONGO_INITDB_ROOT_PASSWORD=secret \
     	mongo
-	docker run -d --rm -v ${PWD}/config:/config \
+	docker run -d --rm -v "${PWD}/config:/config" \
         --link mongocontainer${TAG}:mongo -p 8080:8080 \
-        --name news${TAG} ${IMG}:${TAG}
+        --name news${TAG} "${IMG}:${TAG}"
 
 .PHONY: quickstart-mongo-kill quickstart-kill
 quickstart-mongo-kill quickstart-kill:
@@ -50,7 +53,7 @@ quickstart-config-mongo:
 
 .PHONY: quickstart-mem
 quickstart-mem: docker-build
-	docker run -d --rm -p 8080:8080 --name news${TAG} ${IMG}:${TAG}
+	docker run -d --rm -p 8080:8080 --name news${TAG} "${IMG}:${TAG}"
 
 .PHONY: quickstart-mem-kill
 quickstart-mem-kill:

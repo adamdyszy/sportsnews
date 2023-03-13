@@ -48,7 +48,7 @@ func StartPollerWithConfigFile(
 	if pollerConfig.RunOnceAtBoot {
 		logger.Info("Running jobs for the first time.")
 		for _, e := range c.Entries() {
-			e.Job.Run()
+			go e.Job.Run()
 		}
 	}
 	logger.Info("Starting the scheduler.")
