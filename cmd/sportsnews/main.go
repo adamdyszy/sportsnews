@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	api "github.com/adamdyszy/sportsnews/api/v1"
 	"github.com/adamdyszy/sportsnews/internal/poller"
-	storageImpl "github.com/adamdyszy/sportsnews/internal/storage/mongo"
+	"github.com/adamdyszy/sportsnews/internal/storage/memory"
+	"github.com/adamdyszy/sportsnews/internal/storage/mongo"
+	"github.com/adamdyszy/sportsnews/storage"
 	"github.com/go-logr/zapr"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -51,10 +54,21 @@ func main() {
 	}(z)
 	logger := zapr.NewLogger(z)
 
+	var s storage.ArticleStorage
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
-	s, err := storageImpl.NewMongoStorage(v.Sub("db"), ctx)
+	switch v.GetString("storageKind") {
+	case "mongo":
+		s, err = mongo.NewMongoStorage(v.Sub("mongoStorage"), ctx)
+		if err != nil {
+			logger.Error(err, "Could not initialize storage.")
+			os.Exit(4)
+		}
+	case "memory", "":
+		s = memory.NewMemStorage()
+	default:
+		err = errors.New("unknown database kind")
+	}
 	if err != nil {
 		logger.Error(err, "Could not initialize storage.")
 		os.Exit(4)
@@ -70,7 +84,7 @@ func main() {
 		logger.Error(err, "Could not start poller.")
 		os.Exit(5)
 	}
-	err = api.ListenAndServe(v.Sub("api"), s)
+	err = api.ListenAndServe(v.Sub("api"), s, logger)
 	if err != nil {
 		logger.Error(err, "Could not server api.")
 		os.Exit(6)

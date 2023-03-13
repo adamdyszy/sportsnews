@@ -78,7 +78,7 @@ GetArticleFromNewsElement creates Article
 from NewsElement taken as a value so that it can create pointers to its fields
 */
 func GetArticleFromNewsElement(n NewsElement, teamId string, hasDetails bool) (types.Article, error) {
-	publishedDate, err := time.Parse(NewsPublishedDateLayout, n.PublishDate) // 2023-03-04 10:23:34 -> 2022-07-19T17:00:00.000Z
+	publishedDate, err := time.Parse(NewsPublishedDateLayout, n.PublishDate)
 	if err != nil {
 		return types.Article{}, err
 	}
@@ -99,7 +99,7 @@ func GetArticleFromNewsElement(n NewsElement, teamId string, hasDetails bool) (t
 		VideoURL:    n.VideoURL,
 		HasDetails:  hasDetails,
 	}
-	article.Id, err = article.GetOrGenerateID()
+	err = article.SetGeneratedId()
 	if err != nil {
 		return types.Article{}, err
 	}

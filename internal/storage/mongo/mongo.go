@@ -26,15 +26,18 @@ func NewMongoStorage(v *viper.Viper, ctx context.Context) (storage.ArticleStorag
 	dbName := v.GetString("name")
 	user := v.GetString("user")
 	password := v.GetString("password")
-	articlesCollName := v.GetString("articles_coll")
-	timeoutSeconds := v.GetInt("timeout_seconds")
+	articlesCollName := v.GetString("articlesColl")
+	timeoutSeconds := v.GetInt("timeoutSeconds")
 	timeout := time.Duration(timeoutSeconds) * time.Second
 
 	// Create a new MongoDB client.
-	clientOptions := options.Client().ApplyURI(dbURI).SetAuth(options.Credential{
-		Username: user,
-		Password: password,
-	})
+	clientOptions := options.Client().ApplyURI(dbURI)
+	if user != "" {
+		clientOptions.SetAuth(options.Credential{
+			Username: user,
+			Password: password,
+		})
+	}
 	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create MongoDB client: %w", err)

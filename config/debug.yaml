@@ -1,7 +1,7 @@
 db:
   uri: "mongodb://localhost:27017"
   name: "newsDB"
-  articles_coll: "articles"
+  articlesColl: "articles"
   user: "mongoadmin"
   password: "secret"
-  timeout_seconds: 100
+  timeoutSeconds: 100

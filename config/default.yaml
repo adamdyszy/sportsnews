@@ -1,19 +1,20 @@
-db:
-  uri: "mongodb://localhost:27017"
-  name: "newsDB"
-  articles_coll: "articles"
-  user: "mongoadmin"
-  password: "secret"
-  timeout_seconds: 10
-poller:
-  runOnceAtBoot: true
-  teamId: t94
-  list:
-    url: "https://www.wearehullcity.co.uk/api/incrowd/getnewlistinformation"
-    count: 100 # cannot get more than 100 at once
-    schedule: "@every 1h"
-  details:
+storageKind: "mongo" # What kind of storage to use. Possible options: mongo, memory
+mongoStorage: # options for storageKind mongo
+  uri: "mongodb://localhost:27017" # connection uri
+  name: "newsDB" # database name
+  articlesColl: "articles" # articles collection name
+  user: "mongoadmin" # username when connecting to db
+  password: "secret" # password when connecting to db
+  timeoutSeconds: 60 # how many seconds should db wait for execution of queries before cancellation
+poller: # polling data options
+  runOnceAtBoot: true # Should all pollers be executed once at boot
+  teamId: t94 # what teamId should be added to polled news when transforming to articles
+  list: # polling news lists options
+    url: "https://www.wearehullcity.co.uk/api/incrowd/getnewlistinformation" # url to poll news list from
+    count: 100 # how many last news to get when polling, cannot get more than 100
+    schedule: "@every 1h" # cron schedule, for more info see https://pkg.go.dev/github.com/robfig/cron
+  details: # polling details options (will not query url if already have all details)
     url: "https://www.wearehullcity.co.uk/api/incrowd/getnewsarticleinformation"
-    schedule: "@every 1h"
-api:
-  address: ":8080"
+    schedule: "@every 5m" # cron schedule, for more info see https://pkg.go.dev/github.com/robfig/cron
+api: # api options
+  address: ":8080" # address at which the rest api will be served

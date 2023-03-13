@@ -14,7 +14,10 @@ type innerStorage struct {
 }
 
 func (i innerStorage) Delete(id types.ArticleId) error {
-	panic("implement me")
+	i.mx.Lock()
+	defer i.mx.Unlock()
+	delete(i.newsIdsForDetails, string(id))
+	return nil
 }
 
 func (i innerStorage) Disconnect() error {
@@ -25,7 +28,7 @@ func (i innerStorage) GetNewsWithoutDetailsIDs() ([]string, error) {
 	i.mx.RLock()
 	defer i.mx.RUnlock()
 	v := make([]string, 0, len(i.newsIdsForDetails))
-	for newsId, _ := range i.newsIdsForDetails {
+	for newsId := range i.newsIdsForDetails {
 		v = append(v, newsId)
 	}
 	return v, nil

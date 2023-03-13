@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/adamdyszy/sportsnews/storage"
 	"github.com/go-logr/logr"
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"io"
 	"net/http"
@@ -33,13 +33,13 @@ func StartPollerWithConfigFile(
 	logger = logger.WithValues("workerKind", "NewsPoller")
 	logger.Info("Starting poller with this config.", "config", pollerConfig)
 	c := cron.New()
-	err = c.AddFunc(pollerConfig.List.Schedule, func() {
+	_, err = c.AddFunc(pollerConfig.List.Schedule, func() {
 		PollNewsListIntoStorage(ctx, pollerConfig, logger, s)
 	})
 	if err != nil {
 		return fmt.Errorf("error adding PollNewsListIntoStorage to cron: %w", err)
 	}
-	err = c.AddFunc(pollerConfig.Details.Schedule, func() {
+	_, err = c.AddFunc(pollerConfig.Details.Schedule, func() {
 		PollNewsDetailsIntoStorage(ctx, pollerConfig, logger, s)
 	})
 	if err != nil {
@@ -76,7 +76,7 @@ func PollNewsDetailsIntoStorage(ctx context.Context, config DetailsConfig, logge
 			return
 		}
 	}
-	logger.Info("Finished polling details of all newses.")
+	logger.Info("Finished polling and saving details of all newses.")
 }
 
 func PollNewsDetailsIntoStorageOfGivenID(ctx context.Context, config DetailsConfig, logger logr.Logger, s storage.ArticleStorage, newsId string) error {
