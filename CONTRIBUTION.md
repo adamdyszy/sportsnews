@@ -8,12 +8,14 @@ Try to follow twelve-factor methodology https://12factor.net/ for good practices
 
 Source files:
 
-- api - hosts all HTTP related files, it is a good practice to group and version the code. Under this you’ll find the router and handlers folder for the server logic.
+- api - hosts all HTTP related files, it is a good practice to group and version the code. Under this you’ll find the router and handler for the server logic.
 - cmd/<project-name> - keeps the main.go, keep this file relatively small as a good practice.
   - config - next to the main.go include config with default configuration
-- internal - folder will have all the different logic packages such as storage
+- internal - folder will have all the different logic packages such as storage implementation
+- storage - overall storage interfaces
+- types - api used types
 
-Test files will be included in packages they corresponds to.
+Test files will be included in packages they correspond to.
 
 ## Dependencies
 
