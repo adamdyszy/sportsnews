@@ -10,10 +10,11 @@ Source files:
 
 - api - hosts all HTTP related files, it is a good practice to group and version the code. Under this you’ll find the router and handler for the server logic.
 - cmd/<project-name> - keeps the main.go, keep this file relatively small as a good practice.
-  - config - next to the main.go include config with default configuration
+- config - include config files
 - internal - folder will have all the different logic packages such as storage implementation
 - storage - overall storage interfaces
 - types - api used types
+- vendor - all dependencies so it can be built consistent
 
 Test files will be included in packages they correspond to.
 

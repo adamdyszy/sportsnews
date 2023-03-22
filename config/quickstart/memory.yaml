@@ -1,0 +1,6 @@
+storageKind: "memory"
+poller:
+  list:
+    schedule: "@every 1m"
+  details:
+    schedule: "@every 1m"

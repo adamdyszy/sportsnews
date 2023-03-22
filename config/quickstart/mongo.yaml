@@ -1,0 +1,10 @@
+storageKind: "mongo"
+mongoStorage:
+  uri: "mongodb://mongo:27017"
+  user: "mongoadmin"
+  password: "secret"
+poller:
+  list:
+    schedule: "@every 5m"
+  details:
+    schedule: "@every 3m"

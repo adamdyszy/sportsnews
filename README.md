@@ -20,26 +20,74 @@ but if it will start working again at some point then it should work again if sa
 
 ## Quickstart
 
-Example using docker and mongo
+Quick examples to run using docker.
+The container names has hash in their names so they are unique.
+It is generated using git commit or if not possible then md5sum of go files excluding vendor.
 
-- You can easily run example mongo database and news server using docker with:
+### Quickstart MongoDB
 
-**Note:** It will override your config/custom.yaml
+Example using docker and mongo.
+It will run 2 containers: mongodb, newsServer.
+NewsServer will run with this config: [config/quickstart/mongo.yaml](config/quickstart/mongo.yaml)
+
+- Start with:
 
 ```bash
 make quickstart
 ```
 
-- Then you should be able to access the app withing a minute with curl or accessing the web:
+- Then you should be able to access the app within a minute with curl or accessing the web:
 
 ```bash
 curl localhost:8080/articles
+```
+
+- You can choose some id from the result and get single article using:
+
+```bash
+curl localhost:8080/articles/{ID}
+```
+
+- Since the detailed and list poller started at the same time detailed poller didn't know what details to get.
+- It will get the details on the next scheduled time (3 minutes in this example), but if you want to force it you can just restart the server:
+
+```bash
+make quickstart-restart-server
 ```
 
 - To kill and delete these containers run:
 
 ```bash
 make quickstart-kill
+```
+
+### Quickstart Memory
+
+It will run container: newsServer.
+NewsServer will run with this config: [config/quickstart/memory.yaml](config/quickstart/memory.yaml)
+
+- Start with:
+
+```bash
+make quickstart-mem
+```
+
+- Then you should be able to access the app within a minute with curl or accessing the web:
+
+```bash
+curl localhost:8080/articles
+```
+
+- You can choose some id from the result and get single article using:
+
+```bash
+curl localhost:8080/articles/{ID}
+```
+
+- To kill and delete these containers run:
+
+```bash
+make quickstart-mem-kill
 ```
 
 ## How to run
@@ -59,14 +107,42 @@ go build -o=bin/sportsnews -mod=vendor cmd/sportsnews/main.go
 if test -r config/default.yaml && test -r config/custom.yaml;then ./bin/sportsnews;fi
 ```
 
+- You can run binary using different config with:
+
+```bash
+./bin/sportsnews --customConfigFile <PATH to your config file>
+```
+
+- You can just run it using makefile:
+
+```bash
+make run
+```
+
+or with custom config file:
+
+```bash
+make run CONFIG_FILE=<PATH to your config file>
+```
+
 - You can also build and run the docker image for the server, but before
-that make sure you have your config ready in config/custom.yaml:
+that make sure you have your config ready in config/custom.yaml or set CONFIG_FILE.
 
 ```bash
 make docker-build
-make docker-run
+make docker-run #CONFIG_FILE=<PATH to your config file>
 # or
-make docker-run-background
+make docker-run-background #CONFIG_FILE=<PATH to your config file>
+```
+
+- You can get config of your running server in docker using:
+
+```bash
+docker logs <your_server_docker_container_name> 2>&1 | head -n 1
+```
+
+```
+2023-03-22T14:55:21Z    INFO    poller/poller.go:34     Starting poller with this config.       {"workerKind": "NewsPoller", "config": {"TeamId":"t94","RunOnceAtBoot":true,"List":{"URL":"https://www.wearehullcity.co.uk/api/incrowd/getnewlistinformation","Count":100,"Schedule":"@every 1h"},"Details":{"URL":"https://www.wearehullcity.co.uk/api/incrowd/getnewsarticleinformation","Schedule":"@every 5m"}}}
 ```
 
 ## MongoDB configuration

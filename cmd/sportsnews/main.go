@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	api "github.com/adamdyszy/sportsnews/api/v1"
 	"github.com/adamdyszy/sportsnews/internal/poller"
@@ -17,6 +18,11 @@ import (
 )
 
 func main() {
+	// handle args
+	var customConfigFile string
+	flag.StringVar(&customConfigFile, "customConfigFile", "config/custom.yaml", "Custom config file that will override config/default.yaml")
+	flag.Parse()
+
 	// Create a new Viper configuration object.
 	v := viper.GetViper()
 	v.SetConfigFile("config/default.yaml")
@@ -27,10 +33,11 @@ func main() {
 	}
 
 	// Read the custom configuration values if the custom config file exists.
-	v.SetConfigFile("config/custom.yaml")
+	v.SetConfigFile(customConfigFile)
 	if err := viper.MergeInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			fmt.Printf("Custom config file not found")
+			fmt.Printf("Custom config file not found: %v\n", customConfigFile)
+			os.Exit(2)
 		} else {
 			fmt.Printf("Error reading custom config file: %s\n", err)
 			os.Exit(2)
