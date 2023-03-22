@@ -2,7 +2,7 @@ IMG ?= adamdyszy/sportsnews
 $(eval GIT_COMMIT := $(shell git rev-parse --short HEAD))
 TAG ?= $(GIT_COMMIT)
 ifeq ($(strip $(TAG)),)
-    TAG ?= $(shell find . -path './vendor' -prune -type f -o -name "*.go" -type f -print0 | sort -z | xargs -0 cat | md5sum | cut -d ' ' -f1)
+	TAG = $(shell find . -path './vendor' -prune -type f -o -name "*.go" -type f -print0 | sort -z | xargs -0 cat | md5sum | cut -d ' ' -f1)
 endif
 NEWS_CONTAINER_NAME ?= news${TAG}
 MONGO_CONTAINER_NAME ?= mongocontainer${TAG}
@@ -94,6 +94,7 @@ quickstart quickstart-mongo: docker-build
 	@echo "curl localhost:8080/articles/{ID}"
 	@echo "restart the server with (this will trigger getting details for articles):"
 	@echo "docker restart ${NEWS_CONTAINER_NAME}"
+	@echo "to show these options again simply run make quickstart again"
 
 .PHONY: quickstart-restart-server quickstart-mongo-restart-server
 quickstart-restart-server quickstart-mongo-restart-server:
@@ -128,6 +129,7 @@ quickstart-mem: docker-build
 	@echo "curl localhost:8080/articles"
 	@echo "to curl the server with article id use:"
 	@echo "curl localhost:8080/articles/{ID}"
+	@echo "to show these options again simply run make quickstart-mem again"
 
 .PHONY: quickstart-mem-kill
 quickstart-mem-kill:
